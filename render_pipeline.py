@@ -1,6 +1,17 @@
 from math import sqrt, sin, cos, tan, radians, atan2
 import pygame
 class renderer:
+    def __init__(app):
+        app.camera_x = 0
+        app.camera_y = 0
+        app.camera_z = 0
+
+        app.camera_yaw = 0
+        app.camera_pitch = 0
+        app.camera_roll = 0
+        
+        app.camera_fov = 60
+
     def calc_focal_length(app,screen_x,camera_fov):
         camera_focal_length = (screen_x/2)/tan(camera_fov/2)
         if camera_focal_length < 0:
@@ -373,16 +384,19 @@ class renderer:
             pygame.draw.circle(surface,color,(vertex[0],vertex[1]),5)
     # draw edges (DONE)
     def draw_edges(app,edges, surface,color):
-        pass
+        for edge in edges:
+            pygame.draw.line(surface,color,
+                [edge[0],edge[1]],
+                [edge[2],edge[3]])
     # draw polygons(DONE)
     def draw_polygons(app,polygons, surface):
         for polygon in polygons:
-            pygame.draw.polygon(surface,polygon[3],
-                [(polygon[0][0],polygon[0][1]),
-                 (polygon[1][0],polygon[1][1]),
-                 (polygon[2][0],polygon[2][1])])
+            pygame.draw.polygon(surface,polygon[6],
+                [(polygon[0],polygon[1]),
+                 (polygon[2],polygon[3]),
+                 (polygon[4],polygon[5])])
     # drawing function (DONE)
-    def draw(app, vertexes,edges,polygons, surface,Vcolor,Ecolor, render_vertexes=True,render_edges=False,render_polygons=False):
+    def draw(app, vertexes,edges,polygons, surface,Vcolor,Ecolor, render_vertexes=True,render_edges=True,render_polygons=True):
         # draw vertexes
         if render_vertexes == True:
             app.draw_vertexes(vertexes,surface,Vcolor)
@@ -400,7 +414,7 @@ class renderer:
         # transfer object vertexes from world coordinates to camera coordinates
         vertexes = app.move_to_camera([camera_x,camera_y,camera_z], [camera_yaw,camera_pitch,camera_roll], vertexes)
         # sort polygons
-        polygons = app.sort_polygons(polygons, vertexes, camera_pos)
+        #polygons = app.sort_polygons(polygons, vertexes, camera_pos)
         # project vertexes
         if projection_method == "MP":
             vertexes = app.military_projection(vertexes)
