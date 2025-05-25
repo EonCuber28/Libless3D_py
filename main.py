@@ -1,129 +1,163 @@
-# import modules
-import pygame, time, object
-import render_pipeline
-# start the renderer script
-renderer = render_pipeline.renderer()
+#!/home/pi/python_projects/bin/python3.11
+# import pygame
+import pygame
+# import renderer
+from engine.camera import camera, reCalculateFOV, recalc_vects
+from engine.rotat_trans_scal import rotate_vertexes
+from engine.object_handler import center_object
+from math import pi, radians
+from controler import handle_movement
+from time import time, sleep
+from engine.texture_manager import load_texture, resize_texture
+from assets.models.cube import cube
+from engine.rotat_trans_scal import scale_vertexes, translate_vertexes
+from engine.texture_mapper import full_screen_mapping, split_object_polygons_into_tris
+from assets.models.python.new_cube import objecto
+# set general vars
+background_color = (0,0,0)
+# prepare the cube
+cube = list(cube())
+cube = [cube[0],cube[1],cube[2],cube[3]]
+cube[0] = translate_vertexes(cube[0],0,0,1)
+cube[0] = scale_vertexes(cube[0],0.1,0.1,0.1)
+# start camera class
+camera_data = camera()
+# define camera params
+camera_data.camX = 0.25
+camera_data.camY = 0.25
+camera_data.camZ = 0
+
+camera_data.camRotX = 0
+camera_data.camRotY = 0
+camera_data.camRotZ = 0
+
+camera_data.FOV = radians(80)
+# start the pygame display
 # start pygame
 pygame.init()
 # initialise and configure pygame window
-window_x = 1050
-window_y = 800
-window_size = (window_x,window_y)
-screen = pygame.display.set_mode(window_size)
+window_x = 80
+window_y = 45
+camera_data.resX = window_x
+camera_data.resY = window_y
+reCalculateFOV(camera_data)
+game_res = (window_x,window_y)
+final_res = (1280,720)
+game_screen = pygame.Surface(game_res)
+user_screen = pygame.display.set_mode(final_res, pygame.RESIZABLE)
 pygame.display.set_caption("3D renderer")
-# start pygame clock and fps
-clock = pygame.time.Clock()
-fps = 60
-# set colors
-white = (255,255,255)
-black = (0,0,0)
-red = (255,0,0)
-green = (0,255,0)
-blue = (0,0,255)
-# set the fonts
-font = pygame.font.Font("/home/pi/python_projects/3d renderer/fonts/Seven Segment.ttf", 20)
-vertex_color = (255,255,255)
-edge_color = (0,255,0)
-
-# set courser visibility
-pygame.mouse.set_visible(False)
-
-def get_frame_data(object):
-    vertexes,edges,polygons = object
-    camera_pos = [renderer.camera_x,renderer.camera_y,renderer.camera_z]
-    camera_orientation = [renderer.camera_yaw,renderer.camera_pitch,renderer.camera_roll]
-    return renderer.render_object(
-        vertexes,edges,polygons, 
-        camera_pos, camera_orientation, 
-        renderer.calc_focal_length(window_x, renderer.camera_fov),
-        window_x, window_y, "")
-
-last_frame_keys = pygame.key.get_pressed()
-def proccess_keys():
-    global last_frame_keys
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            quit()
-    keys = pygame.key.get_pressed()    
-    if keys[pygame.K_w]:
-        renderer.camera_x,renderer.camera_y,renderer.camera_z = renderer.move_cam_forward(
-            [renderer.camera_x,renderer.camera_y,renderer.camera_z],
-            [renderer.camera_yaw,renderer.camera_pitch,renderer.camera_roll],
-            0.5)
-    if keys[pygame.K_s]:
-        renderer.camera_x,renderer.camera_y,renderer.camera_z = renderer.move_cam_backward(
-            [renderer.camera_x,renderer.camera_y,renderer.camera_z],
-            [renderer.camera_yaw,renderer.camera_pitch,renderer.camera_roll],
-            0.5)
-    if keys[pygame.K_a]:
-        renderer.camera_x,renderer.camera_y,renderer.camera_z = renderer.move_cam_left(
-            [renderer.camera_x,renderer.camera_y,renderer.camera_z],
-            [renderer.camera_yaw,renderer.camera_pitch,renderer.camera_roll],
-            0.02)
-    if keys[pygame.K_d]:
-        renderer.camera_x,renderer.camera_y,renderer.camera_z = renderer.move_cam_right(
-            [renderer.camera_x,renderer.camera_y,renderer.camera_z],
-            [renderer.camera_yaw,renderer.camera_pitch,renderer.camera_roll],
-            0.02)
-    if keys[pygame.K_LSHIFT] or keys[pygame.K_c]:
-        renderer.camera_x,renderer.camera_y,renderer.camera_z = renderer.move_cam_down(
-            [renderer.camera_x,renderer.camera_y,renderer.camera_z],
-            [renderer.camera_yaw,renderer.camera_pitch,renderer.camera_roll],
-            -0.05)
-    if keys[pygame.K_SPACE]:
-        renderer.camera_x,renderer.camera_y,renderer.camera_z = renderer.move_cam_up(
-            [renderer.camera_x,renderer.camera_y,renderer.camera_z],
-            [renderer.camera_yaw,renderer.camera_pitch,renderer.camera_roll],
-            -0.05)
-    last_frame_keys = pygame.key.get_pressed()
-
-def proccess_mouse():
-    sensityivity = 0.4
-    x_intensity = 0.01
-    y_intensity = 0.01
-    movement = pygame.mouse.get_rel()
-    renderer.camera_pitch -= movement[0]*x_intensity*sensityivity
-    renderer.camera_roll -= movement[1]*y_intensity*sensityivity
-
-def proccess_gui():
-    # position labels
-    labelX = font.render("X: "+str(renderer.camera_x), True, white)
-    labelY = font.render("Y: "+str(renderer.camera_y), True, white)
-    labelZ = font.render("Z: "+str(renderer.camera_z), True, white)
-    # orientation labels
-    labelYaw = font.render("Yaw: "+str(renderer.camera_yaw), True, white)
-    labelPitch = font.render("Pitch: "+str(renderer.camera_pitch), True, white)
-    labelRoll = font.render("Roll: "+str(renderer.camera_roll), True, white)
-    # add to screen
-    screen.blit(labelX, (3,25))
-    screen.blit(labelY, (3,45))
-    screen.blit(labelZ, (3,65))
-
-    screen.blit(labelYaw, (3,90))
-    screen.blit(labelPitch, (3,115))
-    screen.blit(labelRoll, (3,135))
-
-# start the loop
+# set fps settings
+target_fps = 30
+target_frame_time = 1/target_fps
+print("Frame time limit: "+str(round(target_frame_time*1000,2))+"ms")
+texture = load_texture("texture0.jpg")#cube[3])
+texture = resize_texture(texture,800,800)
+objecto = objecto()
+# center cube around the world origen
+objecto = center_object(objecto)
+# scale cube down
+objecto[0] = scale_vertexes(objecto[0], 0.3,0.3,0.3)
+# pre process the object into tris
+objecto = split_object_polygons_into_tris(objecto)
+#objecto[3] = [objecto[3][0],objecto[3][1]]
+frame_count = 0
+laggy_frames = 0
+worst_frame_time = float("-inf")
+best_frame_time = float("inf")
+total_frame_time = 0
+# define UI variables
+UI_color = (73, 214, 127)
+font = pygame.font.Font(r"E:\Libless3D\assets\fonts\Seven Segment.ttf",20)
+# upscale the canvas
+pygame.transform.scale(game_screen, (500,500))
+objecto_Rx = 0.1
+objecto_Ry = 0
+objecto_Rz = 0
+objecto_Tx = 0
+objecto_Ty = 0 
+objecto_Tz = 0
+# start program loop
+frame_time = 0.01
 while True:
-    start_time = time.time()
-    # proccess key presses
-    proccess_keys()
-    # proccess mosuse movement
-    proccess_mouse()
-    # clear screen
-    screen.fill(black)
-    # draw shapes
-    VT,ED,PG = get_frame_data(object.cube())
-    renderer.draw(VT,ED,PG, screen, vertex_color, edge_color)
-    # calculate render time
-    end_time = time.time()
-    frame_time = round((end_time-start_time)*1000, 4)
-    # update labels
-    frame_time_label = font.render(("frame time in ms: "+str(frame_time)), True, white)
-    screen.blit(frame_time_label, (3,3))
-    proccess_gui()
-    # update display
+    frame_time_start = time()
+    # rotate the cube
+    #objecto_Rx = pi*0.005
+    #objecto_Ry = pi*0.005
+    #objecto_Rz = pi*0.005
+    #objecto[0] = rotate_vertexes(objecto[0],objecto_Rx,objecto_Ry,objecto_Rz)
+    # re calculate the camera vectors
+    recalc_vects(camera_data)
+    # get events for mouse, keyboard, and pygame window
+    pygame_events = pygame.event.get()
+    pressed_keys = pygame.key.get_pressed()
+    mouse_movent = pygame.mouse.get_rel()
+    # handle keyboard/mouse
+    if handle_movement(camera_data,pygame_events,pressed_keys,mouse_movent) == "exit":
+        print("exit")
+        print("frame count: "+str(frame_count))
+        print("laggy frames percentage: "+str(round((laggy_frames/frame_count)*100,2))+"%")
+        print("best frame time: "+str(round(best_frame_time*1000,2))+"ms")
+        print("worst frame time: "+str(round(worst_frame_time*1000,2))+"ms")
+        print("average frame time: "+str(round((total_frame_time/frame_count)*1000,2))+"ms")
+        pygame.quit()
+        quit()
+    # render cube
+    # clear the screen
+    game_screen.fill(background_color)
+    # draw the object
+    #uv_map_triangles(prep_tris(cube[2],cube[0]),camera_data,texture,screen)
+    full_screen_mapping([objecto],{'banan.mtl':texture},camera_data,game_screen)
+    # upscale the display
+    upscaled_display = pygame.transform.scale(game_screen, final_res)
+    user_screen.blit(upscaled_display, (0,0))
+    # draw UI
+    # fps display
+    frametime_text = "Fps: "+str(round(1/frame_time,2))
+    frametime_sprite = font.render(frametime_text, True, UI_color)
+    user_screen.blit(frametime_sprite, (5,5))
+    # cam_x
+    frametime_text = "Cam X: "+str(round(camera_data.camX,2))
+    frametime_sprite = font.render(frametime_text, True, UI_color)
+    user_screen.blit(frametime_sprite, (5,25))
+    # cam_y
+    frametime_text = "Cam Y: "+str(round(camera_data.camY,2))
+    frametime_sprite = font.render(frametime_text, True, UI_color)
+    user_screen.blit(frametime_sprite, (5,45))
+    # cam_z
+    frametime_text = "Cam Z: "+str(round(camera_data.camZ,2))
+    frametime_sprite = font.render(frametime_text, True, UI_color)
+    user_screen.blit(frametime_sprite, (5,65))
+    # cam_Rx
+    frametime_text = "Cam Rx: "+str(round(camera_data.camRotX,2))
+    frametime_sprite = font.render(frametime_text, True, UI_color)
+    user_screen.blit(frametime_sprite, (5,85))
+    # cam_Ry
+    frametime_text = "Cam Ry: "+str(round(camera_data.camRotY,2))
+    frametime_sprite = font.render(frametime_text, True, UI_color)
+    user_screen.blit(frametime_sprite, (5,105))
+    # cam_Rz
+    frametime_text = "Cam Rz: "+str(round(camera_data.camRotZ,2))
+    frametime_sprite = font.render(frametime_text, True, UI_color)
+    user_screen.blit(frametime_sprite, (5,125))
+    # cam_FOV
+    frametime_text = "HFL: "+str(round(camera_data.HFL,2))
+    frametime_sprite = font.render(frametime_text, True, UI_color)
+    user_screen.blit(frametime_sprite, (5,145))
+    # update the display
     pygame.display.flip()
-    # control FPS
-    clock.tick(fps)
+    # get frame end time
+    frame_time_end = time()
+    frame_time = frame_time_end-frame_time_start
+    wait_time = target_frame_time-frame_time
+    #print("frame time: "+str(round(frame_time*1000,2))+"ms")
+    total_frame_time += frame_time
+    if wait_time < 0:
+        print("LAGGING!!")
+        laggy_frames += 1
+        wait_time = 0
+    if frame_time < best_frame_time:
+        best_frame_time = frame_time
+    if frame_time > worst_frame_time:
+        worst_frame_time = frame_time
+    frame_count += 1
+    sleep(wait_time)

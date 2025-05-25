@@ -1,0 +1,91 @@
+seperate render pipeline into different files
+-renderer
+--takes object dat
+--proccesses one or more of the following to be renderd
+---polygons
+---edges
+---edges
+-rotate translate scale DONE
+--rotate DONE
+---by X(yaw) DONE
+---by Y(pitch) DONE
+---by Z(roll) DONE
+--translate DONE
+---by X DONE
+---by Y DONE
+---by Z DONE
+--scale DONE
+---by X DONE
+---by Y DONE
+---by Z DONE
+-project DONE
+--screen coords to pixel cords DONE
+--project polygons DONE
+---orthographic DONE
+---military DONE
+---weak perspective DONE
+---isometric DONE
+---spherical DONE
+--project edges DONE
+---orthographic DONE
+---military DONE
+---weak perspective DONE
+---isometric DONE
+---spherical DONE
+--project vertexes DONE
+---orthographic DONE
+---military DONE
+---weak perspective DONE
+---isometric DONE
+---spherical DONE
+-culler
+--cull polygons
+--cull edges
+--cull polygons
+Finish writing gui.py
+-handles rasterisation
+--polygons
+--edges
+--vertexes
+-hadles UI elemets
+--frame rate
+---pure frame rate
+---weighted frame rate
+--position
+---X
+---Y
+---Z
+--orientation
+---yaw
+---pitch
+---roll
+Finish re-writing main.py
+-get keyboard keys bound to functions
+--moving forward
+--moving backward
+--moving left
+--moving right
+--moving up
+--moving down
+-get the cube and/or test enviroment rendering
+--translate vertexes
+--translate polygons
+--translate edges
+--cull vertexes
+--cull polygons
+--cull edges
+--sort polygons
+--render vertexes
+--render edges
+--render polygons in order
+Finish camera.py
+-get movement vector calculations working
+-get the camera moving
+Get polygon proccessing to sort polygons by nearest point in polygon to camera
+-ask ChatGPT
+
+## FOR THE FAR FUTURE ##
+using PIL for
+-post proccessing
+-depth buffer?
+-custom rasterisation

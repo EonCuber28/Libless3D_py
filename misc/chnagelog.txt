@@ -1,0 +1,95 @@
+feb 10 2025:
+finished the small program that transfers the project between
+the VScode folder and one on a USB drive so that i can tranfer the project between two devices.
+preparing for the Coding 2 classes during softmore and (maybe) senior year. and for right now as well.
+i also am working on this during school hours whnever i have free time, so having the physical USB drive
+for this is going to help a lot. I also set the transfering program to archive versions of the renderer
+in a specified folder on my desktop so that i can allways recover the project from where i last left off
+and so that we can go back in time and see the previous etirations of designes and organisation structires
+and renderer styles. i will allways have military, orthographic, spherical, isometric, and weak perspective
+projection, (as well as Isaac projection) as permenant features in the project. i am planning on eventualy 
+making this into some sort of game, maybe horror, i dont know. i will cross that bridge when i get lighting(maybe),
+and 3D texture mapping to polygon uv coordinates via either custom rasteriser or pygame.
+feb 11 2025:
+comleted multiple functions in camera, and renderer. its ready for the first test
+after the mass reorganisation.
+Nevermind. 2h later, now working on a tester program to ensure integrity of the engine
+And now realising that camera data might not transfer between different programs
+via the import functions for them, wich means that whatever uses camera data(frustum culling/sculpting)
+is going to need to be given the used camera class that has all the main programs camera information and data.
+Great, this is going to be fun to debug afterward at home, bc this is not going to work first try.
+But after i resolve that, and maybe finish the test.py program, maybe then i will be able to run it.
+with all of the new organisation of the rendering pipeline. And just now i realised that in edge/polygon/vertex
+pre-processing i never cull/sculpt any of the vertex points after the purification and/or tranfering to camera space
+of the vertex points. Great. Yet another thing to tackle... Tomorrow!!
+its 10:43pm and i need to go to bed. Dire straits aint gonna keep me awake.
+feb 12 2025:
+i (hopefully) routed the camera class to all cull/sculpt/tranfer to camera space/etc funcitons that all use camera_data.
+and to all projection methods that could posibly use WP projection.
+thinking about the different versions of this project made me realise that this has gone through a lot of versions.
+1st version was made in such a way in where it would never work(this version is lost)
+2nd version was made using a tutorial(also lost)
+3rd version was made in CS academy with a crappy rasteriser.
+4th version is a port of the CS academy version into pygame for PC.
+5th version is a reorganisation of version 4
+And still im not sure if version 5 is going to even work.
+I guess its time to either work on the test program or the main program.
+To restate the intention of this project: This project is to made entireley(other than pygame and numpy along with python scripts) entireley in python.
+I will not to use librarys that simplify the usage of a GPU for this project. and the program must run at least 30fps on a raspberry pi 5 8gb(stock clocks).
+All i have to do for the main program is set up the pygame clock to manage the internal frame time counter.(or i could use a manual time.Time method)
+And set up an object to render, along with a pygame screen for the render to go draw polygons/edges/vertexes on.
+Hopefully the "draw" functions can properly draw on the screen, if not, then i will have to make draw funcitons in "main.py"
+that use the global(inefficient) screen to draw on. i dont want to do that.
+For some reason we are revising the pythagorean theorem for yet another time. and 60-30-90 and 45-45-90 triangles.
+that second this we are learning might be usefull for projeiction/frustum trigonometry. I dont know.
+That concept demontrsates that in a 60-30-90 triangle, the hypotenuse is the leg across the 30 angle X2.
+And that the other leg is equal to the leg across from the 30 angle times root(3).
+that is just the way it is. on a 45-45-90 triangle the two legs are the same and the hypotenuse is either of the legs time root(2).
+feb 20 2025:
+i only recently realised that instead of purifiying each polygon/edge and then processing it,
+it is much more efficient to process the vertex table and then purify the polygons/edges.
+if we did it the way it is right now, we would be doing 3x the work for plygons and 2x for edges.
+not good for performance. especialy when your target is at least 60fps on a raspberry pi 5 with 8gb of ram with a cpu cloco of 2.7ghz.
+unless i can make a custom interface for openGL in python, it will all have to stay on the cpu. i might be able to utilise multi-processing
+in order to split up the work onto multiple cores. but thats a challange for another time.
+right now i just want to get a cube properly rendering, and the camera properly moving.
+ive only recently gotten back around to working on this, mostly due to second semester stuff and more theatre rehersals
+that i am needed at. as well as increased classwork and more available progression in squad busters.
+time to make the sixth version. if i ever want to get this into a game jam im going to need to be able to run this in the browser window
+in order for it to get judged. i might join a pirate game jam, and if i do, im going to ask if i can use a premade 3d renderer
+as a "game engine" so that i could utilise the "engine" folder and its scripts as a starter.
+after a little more digging i can use "pygbag" allowing me to get a web capable version of a pygame project.
+that allows me to host this in the browser on itch.io. very very good.
+there is a pirate game jam happening with the promt "you are the weapon". the next game jam is in 4 months.
+that should be enough time to refine and polish the renderer. maybe with textures and/or lighting.
+lighting is very complex but it sounds fun. all ive done so far is just for the learing experience. tackaling problems in different
+and unusual ways.
+feb 23 2025:
+after finishing the polygon section of the 3d renedering engine, these are the results for polygons:
+{'culling limit': 9549,
+## SIDE COMMENT:      WP   MP   OP   SP   IP   IC
+ 'projection limit': [241, 257, 197, 257, 197, 257],
+ 'rasterisation limit': 5319,
+ 'rotation limit': 130,
+ 'scaling limit': 724,
+ 'sorting_limit': 1067,
+ 'translation limit': 724}
+i am using Numpy for the sorting of polygons.
+not good, even though this is just 1 test. and the results are a bit noisy, here is the average of 10 results: N/A
+Mar 29th 2025 12:46a:
+UV mapping has allways been soooooo close to working properly.
+currently, we are memory bottlenecked,  that means that the thread is waiting for the RAM to update/send over a buffer/list/value.
+so frame times are now up to 50-300ms range. even with the polygon not fully covering the screen(currently at 400x400).
+next steps are to maybe instead of using barycentric weights. we just use the pythagorean theorem to find the distance between 
+the rasterised point and all of the vertexes of the polygon. then normalising them all so we have a total weight of 1.
+then using those weights instead of using barycentric weights. the main scource of math came from vaious scources including:
+https://en.wikipedia.org/wiki/Texture_mapping
+https://www.geometry.caltech.edu/pubs/MHBD02.pdf
+and many many more...
+these have helped so so so much with the process of uv mapping. scince the interpolation of barycentric weights and
+the interpolation of uv coordinates are non linear. things get confusing, fast. all i understand about all of this is:
+numbers go into thing and other thing and then we get what we were wanting.
+i have no idea if this is a good/healthy way to learn about all of this. but at least its fun.
+## comment: uv mapping sucks.
+April 9th 2025:
+my brother sugessted that instead of going through all of the pixels that might cover each 
