@@ -37,12 +37,12 @@ camera_data.FOV = radians(80)
 pygame.init()
 # initialise and configure pygame window
 window_x = 80
-window_y = 45
+window_y = 80
 camera_data.resX = window_x
 camera_data.resY = window_y
 reCalculateFOV(camera_data)
 game_res = (window_x,window_y)
-final_res = (1280,720)
+final_res = (720,720)
 game_screen = pygame.Surface(game_res)
 user_screen = pygame.display.set_mode(final_res, pygame.RESIZABLE)
 pygame.display.set_caption("3D renderer")
@@ -67,7 +67,7 @@ best_frame_time = float("inf")
 total_frame_time = 0
 # define UI variables
 UI_color = (73, 214, 127)
-font = pygame.font.Font(r"E:\Libless3D\assets\fonts\Seven Segment.ttf",20)
+font = pygame.font.Font(r"C:\Users\zappa\Desktop\Libless3D\Libless3D_py\assets\fonts\Seven Segment.ttf",20)
 # upscale the canvas
 pygame.transform.scale(game_screen, (500,500))
 objecto_Rx = 0.1
@@ -81,10 +81,10 @@ frame_time = 0.01
 while True:
     frame_time_start = time()
     # rotate the cube
-    #objecto_Rx = pi*0.005
-    #objecto_Ry = pi*0.005
-    #objecto_Rz = pi*0.005
-    #objecto[0] = rotate_vertexes(objecto[0],objecto_Rx,objecto_Ry,objecto_Rz)
+    objecto_Rx = pi*0.005
+    objecto_Ry = pi*0.005
+    objecto_Rz = pi*0.005
+    objecto[0] = rotate_vertexes(objecto[0],objecto_Rx,objecto_Ry,objecto_Rz)
     # re calculate the camera vectors
     recalc_vects(camera_data)
     # get events for mouse, keyboard, and pygame window

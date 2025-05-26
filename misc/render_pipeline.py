@@ -337,7 +337,7 @@ class renderer:
         pure_polygons = []
         for polygon in polygons:
             pure_polygons.append(app.purify_polygon(polygon,vertexes))
-        sorted_polygons = sort_polygons_by_depth_numpy(pure_polygons)
+        sorted_polygons = sort_polygons_by_depth_numpy(pure_polygons) ## deprecated
         normalised_polgyons = app.normalise_polygons(sorted_polygons)
         return normalised_polgyons
 

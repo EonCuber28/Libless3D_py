@@ -3,7 +3,7 @@ import numpy as np
 
 def load_texture(texture_id):
     try:
-        texture_path = "D:/Libless3D/assets/textures/"+texture_id
+        texture_path = "C:/Users/zappa/Desktop/Libless3D/Libless3D_py/assets/textures/"+texture_id
         texture = np.array(Image.open(texture_path).convert("RGB"))
     except:
         try:
