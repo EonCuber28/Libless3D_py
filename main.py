@@ -36,8 +36,8 @@ camera_data.FOV = radians(80)
 # start pygame
 pygame.init()
 # initialise and configure pygame window
-window_x = 80
-window_y = 80
+window_x = 1
+window_y = 1
 camera_data.resX = window_x
 camera_data.resY = window_y
 reCalculateFOV(camera_data)
@@ -56,7 +56,7 @@ objecto = objecto()
 # center cube around the world origen
 objecto = center_object(objecto)
 # scale cube down
-objecto[0] = scale_vertexes(objecto[0], 0.3,0.3,0.3)
+objecto[0] = scale_vertexes(objecto[0], 0.2,0.2,0.2)
 # pre process the object into tris
 objecto = split_object_polygons_into_tris(objecto)
 #objecto[3] = [objecto[3][0],objecto[3][1]]
@@ -67,7 +67,7 @@ best_frame_time = float("inf")
 total_frame_time = 0
 # define UI variables
 UI_color = (73, 214, 127)
-font = pygame.font.Font(r"C:\Users\zappa\Desktop\Libless3D\Libless3D_py\assets\fonts\Seven Segment.ttf",20)
+font = pygame.font.Font("./assets/fonts/Seven Segment.ttf",20)
 # upscale the canvas
 pygame.transform.scale(game_screen, (500,500))
 objecto_Rx = 0.1

@@ -10,7 +10,7 @@ def load_texture(texture_id):
             texture_path = "E:/Libless3D/assets/textures/"+texture_id
             texture = np.array(Image.open(texture_path).convert("RGB"))
         except:
-            texture_path = "/media/pi/LIBLESS3D/Libless3D/assets/textures/"+texture_id
+            texture_path = "./assets/textures/"+texture_id
             texture = np.array(Image.open(texture_path).convert("RGB"))
     return texture
 

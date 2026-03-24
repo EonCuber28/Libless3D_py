@@ -19,14 +19,43 @@ def Q_rsqrt(number):
     i = 0x5f3759df-(i >> 1)
     y = struct.unpack('f', i.to_bytes(4, 'little'))[0]
     y = y * (threehalfs - (x2 * y * y))
+    y = y * (threehalfs - (x2 * y * y))
     return y
-def normalize_2d_vector(vec):
-    length_sq = vec[0]**2 + vec[1]**2
-    if length_sq == 0:
-        return vec
-    inv_sqrt_len = Q_rsqrt(length_sq)
-    normalized_vec = [v * inv_sqrt_len for v in vec]
-    return normalized_vec
+
+def vector_tri_intersect(Px,Py, preCalc):
+    # preCalc format: [midPoints, midPointVects]
+    # rotate
+    Side1r = preCalc[1][0]
+    Side2r = preCalc[1][1]
+    Side3r = preCalc[1][2]
+    # calculate mid points
+    Side1mid = preCalc[0][0]
+    Side2mid = preCalc[0][1]
+    Side3mid = preCalc[0][2]
+    # calc point vectors
+    PointV1 = [Px-Side1mid[0], Py-Side1mid[1]]
+    PointV2 = [Px-Side2mid[0], Py-Side2mid[1]]
+    PointV3 = [Px-Side3mid[0], Py-Side3mid[1]]
+    # normalize
+    PointV1 = normalize_2d_vector(PointV1)
+    PointV2 = normalize_2d_vector(PointV2)
+    PointV3 = normalize_2d_vector(PointV3)
+    # calculate dots
+    Dot1 = PointV1[0]*Side1r[0]+PointV1[1]*Side1r[1]
+    Dot2 = PointV2[0]*Side2r[0]+PointV2[1]*Side2r[1]
+    Dot3 = PointV3[0]*Side3r[0]+PointV3[1]*Side3r[1]
+    # determine collision
+    if Dot1 > 0 and Dot2 > 0 and Dot3 > 0:
+        return True
+    if Dot1 < 0 and Dot2 < 0 and Dot3 < 0:
+        return True
+    return False
+
+def normalize_2d_vector(vect):
+    x,y = vect
+    length_sq = x * x + y * y
+    inv_len = Q_rsqrt(length_sq)
+    return x * inv_len, y * inv_len
 
 # texturing for faces
 def find_face_center(face):
@@ -180,6 +209,7 @@ def full_screen_mapping(objects,textures,cam_class,screen,draw_tris=False,track_
     if track_telemetry:
         tim2 = time()
     tri_bary_table = []
+    triVects = []
     for tri in tri_table:
         # pre calculate the barycentric div calculations due to it being based on the polygon itself and does not use raterised pixel data
         Xv1 = projected_vertexes[tri[0][0]][0]
@@ -192,6 +222,28 @@ def full_screen_mapping(objects,textures,cam_class,screen,draw_tris=False,track_
         tri_bary_table.append(bary_calc)
         # pre calculate linear calculations for rasterisation
         # im done with this shiiiiiiiiieeeett
+        # fuck past raster method, we using vectors now
+        TriP1 = projected_vertexes[tri[0][0]]
+        TriP2 = projected_vertexes[tri[0][1]]
+        TriP3 = projected_vertexes[tri[0][2]]
+        Side1 = [TriP2[0] - TriP1[0], TriP2[1] - TriP1[1]]
+        Side2 = [TriP3[0] - TriP2[0], TriP3[1] - TriP2[1]]
+        Side3 = [TriP1[0] - TriP3[0], TriP1[1] - TriP3[1]]
+        # normalize
+        Side1 = normalize_2d_vector(Side1)
+        Side2 = normalize_2d_vector(Side2)
+        Side3 = normalize_2d_vector(Side3)
+        # rotate
+        Side1 = [-Side1[1], Side1[0]]
+        Side2 = [-Side2[1], Side2[0]]
+        Side3 = [-Side3[1], Side3[0]]
+        SideVects = [Side1,Side2,Side3]
+        # calculate mid points
+        Side1mid = [(TriP2[0] + TriP1[0]) * 0.5, (TriP2[1] + TriP1[1]) * 0.5]
+        Side2mid = [(TriP3[0] + TriP2[0]) * 0.5, (TriP3[1] + TriP2[1]) * 0.5]
+        Side3mid = [(TriP1[0] + TriP3[0]) * 0.5, (TriP1[1] + TriP3[1]) * 0.5]
+        midPoints = [Side1mid,Side2mid,Side3mid]
+        triVects.append([midPoints, SideVects])
     if track_telemetry:
         tim3 = time()
     # create any needed buffers
@@ -204,16 +256,8 @@ def full_screen_mapping(objects,textures,cam_class,screen,draw_tris=False,track_
             for tri_index in range(len(tri_table)):
                 tri_data = tri_table[tri_index]
                 tri_pre_calcs = tri_bary_table[tri_index]
-                intersections = 0
-                edges = [
-                    [projected_vertexes[tri_data[0][0]],projected_vertexes[tri_data[0][1]]],
-                    [projected_vertexes[tri_data[0][1]],projected_vertexes[tri_data[0][2]]],
-                    [projected_vertexes[tri_data[0][2]],projected_vertexes[tri_data[0][0]]]]
-                for edge in edges:
-                    if does_point_Yvect_intersect_line([Px,Py],edge):
-                        intersections += 1
-                # if the amount of intersecitons is odd then we are inside of the tri
-                if intersections%2 == 1:
+                tri_raster_precalc = triVects[tri_index]
+                if vector_tri_intersect(Px,Py, tri_raster_precalc):
                     # get UVW data
                     # interpolate data with barycentric coordinates
                     # graphical representation: https://www.desmos.com/calculator/vnkm2ajvzz
